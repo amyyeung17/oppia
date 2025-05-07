@@ -1897,24 +1897,30 @@ export class LoggedInUser extends BaseUser {
     selectors: {[key: string]: string},
     criteria: string
   ): Promise<puppeteer.ElementHandle | undefined> {
-    let targetElement;
-    const allElements = await parentElement?.$$(selectors.content);
-    for (const h of allElements || []) {
-      const targetHeadingElement = await h.$(selectors.heading);
-      const targetHeadingText = await targetHeadingElement?.evaluate(ele =>
-        ele.textContent?.trim()
-      );
-      if (targetHeadingText === criteria) {
-        targetElement = h;
-        break;
+    try {
+      let targetElement;
+      const allElements = await parentElement?.$$(selectors.content);
+      for (const h of allElements || []) {
+        const targetHeadingElement = await h.$(selectors.heading);
+        const targetHeadingText = await targetHeadingElement?.evaluate(ele =>
+          ele.textContent?.trim()
+        );
+        if (targetHeadingText === criteria) {
+          targetElement = h;
+          break;
+        }
       }
+      if (!targetElement) {
+        throw new Error(
+          `Element with selectors: ${selectors.toString()} and criteria: ${criteria} is not found`
+        );
+      }
+      return targetElement;
+    } catch (error) {
+      const newError = new Error(`Error in 'findElement': ${error.message}`);
+      newError.stack = error.stack;
+      throw new Error();
     }
-    if (!targetElement) {
-      throw new Error(
-        `Element with selectors: ${selectors.toString()} and criteria: ${criteria} is not found`
-      );
-    }
-    return targetElement;
   }
 
   /**

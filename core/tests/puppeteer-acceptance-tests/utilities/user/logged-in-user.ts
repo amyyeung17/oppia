@@ -1866,14 +1866,24 @@ export class LoggedInUser extends BaseUser {
     selector: string,
     root: puppeteer.Page | puppeteer.ElementHandle | undefined = this.page
   ): Promise<void> {
-    await this.page.waitForSelector(learnerDashSelectors[selector].heading);
-    const allElements = await root?.$$(learnerDashSelectors[selector].heading);
-    const sectionHeadingTexts = await Promise.all(
-      allElements.map(
-        async card => await card.evaluate(el => el.textContent?.trim())
-      )
-    );
-    expect(sectionHeadingTexts).toEqual(expectedTexts);
+    try {
+      await this.page.waitForSelector(learnerDashSelectors[selector].heading);
+      const allElements = await root?.$$(
+        learnerDashSelectors[selector].heading
+      );
+      const sectionHeadingTexts = await Promise.all(
+        allElements.map(
+          async card => await card.evaluate(el => el.textContent?.trim())
+        )
+      );
+      expect(sectionHeadingTexts).toEqual(expectedTexts);
+    } catch (error) {
+      const newError = new Error(
+        `Error in 'expectElementsToBePresent': ${error.message}`
+      );
+      newError.stack = error.stack;
+      throw newError;
+    }
   }
 
   /**

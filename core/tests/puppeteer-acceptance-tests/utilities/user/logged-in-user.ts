@@ -176,6 +176,26 @@ const tagsField = '.e2e-test-chip-list-tags';
 const explorationSummaryTileTitleSelector = '.e2e-test-exp-summary-tile-title';
 const errorSavingExplorationModal = '.e2e-test-discard-lost-changes-button';
 
+const learnerDashSelectors: Record<string, Record<string, string>> = {
+  tabSection: {
+    content: '.e2e-test-learner-dash-section',
+    heading: '.e2e-test-learner-dash-section-heading',
+  },
+  cardDisplay: {
+    content: '.e2e-test-card-display',
+    heading: '.e2e-test-card-display-heading',
+  },
+  topicCard: {
+    content: '.e2e-test-learner-topic-summary-tile',
+    heading: '.e2e-test-learner-topic-summary-tile-title',
+  },
+  lessonCard: {
+    content: '.e2e-test-lesson-card',
+    heading: '.e2e-test-lesson-card-title',
+    button: '.e2e-test-lesson-card-button',
+  },
+};
+
 export class LoggedInUser extends BaseUser {
   /**
    * Function for navigating to the profile page for a given username.
@@ -1803,6 +1823,24 @@ export class LoggedInUser extends BaseUser {
       await this.clickOn(anonymousCheckboxSelector);
     }
     await this.clickOn(submitButtonSelector);
+  }
+
+  async findElementByXPath(
+    selectors: Record<string, string>,
+    targetText: string,
+    parentElement: puppeteer.Page | puppeteer.ElementHandle | null = this.page
+  ): Promise<puppeteer.ElementHandle | null> {
+    if (!parentElement) {
+      return null;
+    }
+
+    const content = selectors.content.slice(1);
+    const heading = selectors.heading.slice(1);
+    const foundElement = await parentElement.$x(
+      `//*[contains(concat(' ', normalize-space(@class), ' '), " ${content} ") and .//*[contains(concat(' ', normalize-space(@class), ' '), " ${heading} ") and normalize-space(.) = "${targetText}"] ]`
+    );
+
+    return foundElement.length > 0 ? foundElement[0] : null;
   }
 }
 

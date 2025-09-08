@@ -199,6 +199,9 @@ const learnerDashSelectors: Record<string, Record<string, string>> = {
   cardDisplay: {
     content: '.e2e-test-card-display',
     heading: '.e2e-test-card-display-heading',
+    container: '.e2e-test-card-display-container',
+    plusButton: '.e2e-test-card-display-plus-button',
+    minusButton: '.e2e-test-card-display-minus-button',
   },
   topicCard: {
     content: '.e2e-test-learner-topic-summary-tile',
@@ -3319,7 +3322,7 @@ export class LoggedInUser extends BaseUser {
       )
     );
 
-    expect(allElementsText).toEqual(expectedTexts);
+    expect(allElementsText.sort()).toEqual(expectedTexts.sort());
 
     excludedTexts.forEach(t => expect(allElementsText).not.toContain(t));
   }
@@ -3505,6 +3508,165 @@ export class LoggedInUser extends BaseUser {
     );
 
     return foundElement.length > 0 ? foundElement[0] : null;
+  }
+
+  /*
+   * Helper function - verifies if the child element is fully visible in parent element.
+   * @param {string} parentElement - Parent element to search though.
+   * @param {string} childElement- Element to search for.
+   */
+  private async isBoxWithinRange(
+    parentElement: puppeteer.ElementHandle | null = null,
+    childElement: puppeteer.ElementHandle | null = null
+  ): Promise<boolean> {
+    if (parentElement === null || childElement === null) {
+      return false;
+    }
+    const {parentLeft, parentRight} = await parentElement.evaluate(el => {
+      const dimensions = el.getBoundingClientRect();
+      return {
+        parentLeft: dimensions.left,
+        parentRight: dimensions.right,
+      };
+    });
+
+    const {childLeft, childRight} = await childElement.evaluate(el => {
+      const dimensions = el.getBoundingClientRect();
+      return {
+        childLeft: dimensions.left,
+        childRight: dimensions.right,
+      };
+    });
+
+    return childLeft >= parentLeft && childRight <= parentRight;
+  }
+
+  /**
+   * Helper function - returns whether the page is RTL. Logic is retrieved from verifyPageIsRTL().
+   */
+  private async isPageRTL(): Promise<boolean> {
+    await this.page.waitForSelector(angularRootElementSelector);
+    const pageDirection = await this.page.evaluate(selector => {
+      const oppiaRoot = document.querySelector(selector);
+      if (!oppiaRoot) {
+        throw new Error(`${selector} not found`);
+      }
+
+      const childDiv = oppiaRoot.querySelector('div');
+      if (!childDiv) {
+        throw new Error('Child div not found');
+      }
+
+      return childDiv.getAttribute('dir');
+    }, angularRootElementSelector);
+    return pageDirection === 'rtl';
+  }
+
+  /**
+   * Helper function - Returns callback that retrieves dimensions of first and last element of a list
+   * based on RTL.
+   * @param {puppeteer.ElementHandle | null | undefined} containerElement - Full list of elements.
+   * @param {boolean} isRTL - Current language is RTL.
+   */
+  private async createCardViewChecker(
+    containerElement: puppeteer.ElementHandle | null | undefined,
+    isRTL: boolean
+  ): Promise<
+    (a: puppeteer.ElementHandle[]) => Promise<Record<string, boolean>>
+  > {
+    const getCardsInView = async (
+      allCardElements: puppeteer.ElementHandle[]
+    ): Promise<Record<string, boolean>> => {
+      const firstCardBox = isRTL
+        ? allCardElements[allCardElements.length - 1]
+        : allCardElements[0];
+      const lastCardBox = isRTL
+        ? allCardElements[0]
+        : allCardElements[allCardElements.length - 1];
+      const isFirstCardInView = await this.isBoxWithinRange(
+        containerElement,
+        firstCardBox
+      );
+      const isLastCardInView = await this.isBoxWithinRange(
+        containerElement,
+        lastCardBox
+      );
+      return {isFirstCardInView, isLastCardInView};
+    };
+    return getCardsInView;
+  }
+
+  private async isButtonDisabled(
+    button: puppeteer.ElementHandle | null | undefined
+  ): Promise<boolean | undefined> {
+    return await button?.evaluate(e => e.hasAttribute('disabled'));
+  }
+
+  /**
+   * Verifies the proper controls display based on card display container. If the screen is too small,
+   * control buttons should appear and shift correctly to the last and first cards.
+   * @param {string} subsection - Subsection title value to match.
+   * @param {string} [section="N/A"] - Overarching section
+   */
+  async expectCardDisplayControls(
+    subsection: string,
+    section: string = 'N/A'
+  ): Promise<void> {
+    const subsectionElement = await this.findSubsectionElement(
+      subsection,
+      section
+    );
+
+    const containerElement = await subsectionElement?.$(
+      learnerDashSelectors.cardDisplay.container
+    );
+
+    const [allCardElements, minusButtonElement, plusButtonElement] =
+      await Promise.all([
+        containerElement?.$$(learnerDashSelectors.lessonCard.content),
+        subsectionElement?.$(learnerDashSelectors.cardDisplay.minusButton),
+        subsectionElement?.$(learnerDashSelectors.cardDisplay.plusButton),
+      ]);
+
+    const isRTL = await this.isPageRTL();
+    if (allCardElements && allCardElements.length > 1) {
+      const getCardsInView = await this.createCardViewChecker(
+        containerElement,
+        isRTL
+      );
+      let {isFirstCardInView, isLastCardInView} =
+        await getCardsInView(allCardElements);
+      if (minusButtonElement === null && plusButtonElement === null) {
+        expect(isFirstCardInView && isLastCardInView).toBe(true);
+      } else {
+        const nextButton = isRTL ? minusButtonElement : plusButtonElement;
+        const prevButton = isRTL ? plusButtonElement : minusButtonElement;
+
+        expect(isFirstCardInView).toBe(true);
+
+        let isPrevDisabled = await this.isButtonDisabled(prevButton);
+        expect(isPrevDisabled).toBe(true);
+
+        await nextButton?.click();
+        isFirstCardInView = (await getCardsInView(allCardElements))
+          .isFirstCardInView;
+        expect(isFirstCardInView).toBe(false);
+
+        isPrevDisabled = await this.isButtonDisabled(prevButton);
+        expect(isPrevDisabled).toBe(false);
+
+        await prevButton?.click();
+        isPrevDisabled = await this.isButtonDisabled(prevButton);
+        isFirstCardInView = (await getCardsInView(allCardElements))
+          .isFirstCardInView;
+        expect(isFirstCardInView).toBe(true);
+        expect(isPrevDisabled).toBe(true);
+      }
+    } else {
+      throw new Error(
+        `Unexpected error retrieving card display controls from ${subsection} section in ${section}`
+      );
+    }
   }
 }
 

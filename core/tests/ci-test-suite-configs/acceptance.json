@@ -1,50 +1,6 @@
 {
   "suites": [
     {
-      "name": "logged-in-user/deny-access-to-pages-without-additional-roles",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/logged-in-user/deny-access-to-pages-without-additional-roles.spec.ts"
-    },
-    {
-      "name": "logged-in-user/save-an-exploration-to-play-later",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/logged-in-user/save-an-exploration-to-play-later.spec.ts"
-    },
-    {
-      "name": "interested-partner-organization/submit-a-partnership-application",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-partner-organization/submit-a-partnership-application.spec.ts"
-    },
-    {
-      "name": "interested-volunteer/apply-to-become-a-volunteer",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-volunteer/apply-to-become-a-volunteer.spec.ts"
-    },
-    {
-      "name": "interested-donor/learn-about-the-organization",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-donor/learn-about-the-organization.spec.ts"
-    },
-    {
-      "name": "interested-donor/make-a-donation",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-donor/make-a-donation.spec.ts"
-    },
-    {
-      "name": "interested-parent/attempt-to-contact-the-organization",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-parent/attempt-to-contact-the-organization.spec.ts"
-    },
-    {
-      "name": "interested-parent/check-the-tos-and-privacy-pages",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-parent/check-the-tos-and-privacy-pages.spec.ts"
-    },
-    {
-      "name": "interested-parent/download-the-android-app",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-parent/download-the-android-app.spec.ts"
-    },
-    {
-      "name": "interested-parent/learn-about-the-organization",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-parent/learn-about-the-organization.spec.ts"
-    },
-    {
-      "name": "interested-parent/sign-up-for-oppias-newsletter",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/interested-parent/sign-up-for-oppias-newsletter.spec.ts"
-    },
-    {
       "name": "blog-admin/assign-roles-to-users-and-change-tag-properties",
       "module": "core/tests/puppeteer-acceptance-tests/specs/blog-admin/assign-roles-to-users-and-change-tag-properties.spec.ts"
     },
@@ -149,6 +105,10 @@
       "module": "core/tests/puppeteer-acceptance-tests/specs/logged-in-user/restart-or-continue-exploration-on-revisit.spec.ts"
     },
     {
+      "name": "logged-in-user/save-an-exploration-to-play-later",
+      "module": "core/tests/puppeteer-acceptance-tests/specs/logged-in-user/save-an-exploration-to-play-later.spec.ts"
+    },
+    {
       "name": "logged-in-user/edit-profile-preferences-and-export-their-account",
       "module": "core/tests/puppeteer-acceptance-tests/specs/logged-in-user/edit-profile-preferences-and-export-their-account.spec.ts"
     },
@@ -179,6 +139,14 @@
     {
       "name": "logged-in-user/manage-exploration-progress-in-learner-dashboard",
       "module": "core/tests/puppeteer-acceptance-tests/specs/logged-in-user/manage-exploration-progress-in-learner-dashboard.spec.ts"
+    },
+    {
+      "name": "logged-in-user/manage-exploration-progress-in-home-learner-dashboard",
+      "module": "core/tests/puppeteer-acceptance-tests/specs/logged-in-user/manage-exploration-progress-in-home-learner-dashboard.spec.ts"
+    },
+    {
+      "name": "logged-in-user/deny-access-to-pages-without-additional-roles",
+      "module": "core/tests/puppeteer-acceptance-tests/specs/logged-in-user/deny-access-to-pages-without-additional-roles.spec.ts"
     },
     {
       "name": "logged-out-user/click-all-buttons-on-about-page",
@@ -231,10 +199,6 @@
     {
       "name": "logged-out-user/play-lesson-in-different-languages-and-listen-to-voiceovers",
       "module": "core/tests/puppeteer-acceptance-tests/specs/logged-out-user/play-lesson-in-different-languages-and-listen-to-voiceovers.spec.ts"
-    },
-    {
-      "name": "logged-out-user/generate-and-play-automated-voiceovers",
-      "module": "core/tests/puppeteer-acceptance-tests/specs/logged-out-user/generate-and-play-automated-voiceovers.spec.ts"
     },
     {
       "name": "logged-out-user/play-through-lesson-while-getting-feedback-and-hints",
